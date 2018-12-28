@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clog</title>
+  <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="apple-icon.png">
+  <style>
+    html {
+      background: black;
+    }
+    body {
+      background: white;
+      border-radius: 5px;
+      margin: 0px;
+      padding: 0px;
+      min-height: 100vh;
+    }
+    * {
+      font-family: 'Helvetica Neue', 'Helvetica', sans-serif;
+      font-size: 16px;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container {
+      padding-bottom: 100px;
+    }
+    .container.show-form .form {
+      bottom: 0;
+      opacity: 1;
+    }
+    .container.show-form .thought-list {
+      opacity: 0.2;
+    }
+    .container.show-form .overlay {
+      opacity: 1;
+      top: 0;
+    }
+    .overlay {
+      transition: opacity 0.3s;
+      opacity: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 5;
+      position: fixed;
+      top: 110vh;
+      left: 0;
+      right: 0;
+      bottom: -100px;
+    }
+    .thought-list {
+      transition: opacity 0.4s;
+      padding: 10px;
+    }
+    .thought-list h1 {
+      font-size: 18px;
+      border-bottom: 1px solid black;
+    }
+    .form {
+      position: fixed;
+      bottom: -400px;
+      opacity: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      box-shadow: 0px -20px 80px rgba(0,0,0,0.25);
+      padding: 40px 20px 20px 20px;
+      text-align: right;
+      z-index: 10;
+      transition: bottom 0.2s, opacity 0.2s;
+    }
+    .form:before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%);
+      width: 100px;
+      height: 5px;
+      border-radius: 15px;
+      top: 15px;
+      background: #ddd;
+    }
+    .thought-input {
+      font-size: 18px;
+      border: none;
+      display: block;
+      height: 200px;
+      width: 100%;
+      text-align: left;
+    }
+    .thought-input:focus {
+      outline: none;
+    }
+    .save-thought {
+      text-align: right;
+      border: 0;
+      background: black;
+      color: white;
+      padding: 8px 20px 12px 20px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .thought p {
+      margin: 0 0 3px 0;
+    }
+    .date {
+      font-size: 14px;
+      color: #aaa;
+      display: block;
+      margin-bottom: 10px;
+    }
+    .show-form-button {
+      background: black;
+      color: white;
+      font-size: 40px;
+      font-weight: bold;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      padding: 0 0 12px 0;
+      border-radius: 20px;
+      text-align: center;
+      position: fixed;
+      line-height: 0px;
+      border: 0;
+      -webkit-appearance: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="overlay"></div> 
+    <div class="form">
+      <textarea class="thought-input" placeholder="What's happening?"></textarea>
+      <button class="save-thought">Save</button>
+    </div>
+    <div class="thought-list"></div>
+    <button class="show-form-button">+</button>
+  </div>
+
+  <script src="/jquery.js"></script>
+  <script src="/moment.js"></script>
+  <script src="/hammer.js"></script>
+  <script>
+      const THOUGHTS = 'thoughts';
+      let showingForm = false;
+
+      let mc2 = new Hammer($('body')[0], {recognizers: [[Hammer.Swipe,{ direction: Hammer.DIRECTION_VERTICAL }]]});
+      let mc3 = new Hammer($('.form')[0], {recognizers: [[Hammer.Swipe,{ direction: Hammer.DIRECTION_VERTICAL }]]});
+
+      mc2.on('swipe', (e) => {if (e.angle > 0 && showingForm) hideForm()});
+      mc3.on('swipe', (e) => {if (e.angle > 0 && showingForm) hideForm()});
+
+      // Save a thought
+      const saveThought = (text) => {
+        if (text && text !== '') {
+          if (localStorage.getItem(THOUGHTS) === null) {
+            localStorage.setItem(THOUGHTS, JSON.stringify([{text: text, created_at: new Date().toString()}]));
+          } else {
+            let thoughtsArr = JSON.parse(localStorage.getItem(THOUGHTS));
+            thoughtsArr.push({text: text, created_at: new Date().toString()});
+            localStorage.setItem(THOUGHTS, JSON.stringify(thoughtsArr));
+          }
+        }
+      };
+
+      // Handle form submit
+      $(".thought-input").focus();
+      $(".save-thought").on('click', (e) => {
+        let text = $('.thought-input').val();
+        saveThought(text);
+        $('.thought-input').val('');
+        renderThoughts();
+        hideForm();
+      });
+
+      // Render existing thoughts
+      const renderThoughts = () => {
+        $('.thought-list').html('');
+        const existingThoughts = JSON.parse(localStorage.getItem(THOUGHTS));
+        const sortedThoughts = existingThoughts.sort((a, b) => {
+          return new Date(a.created_at) - new Date(b.created_at);
+        }).reverse();
+        let lastDate = null;
+        for (let thought of sortedThoughts) {
+          const d = new Date(thought.created_at);
+          if (lastDate === null || lastDate.getDate() !== d.getDate()) {
+            $('.thought-list').append(`<h1>${moment(d).format('dddd MMM Do')}</h1>`);
+          }
+          $('.thought-list').append(`<div class="thought"><p>${thought.text}</p><span class="date">${moment(d).format('h:mma')}</span></div>`);
+          lastDate = d;
+        }
+      }
+
+      // Show form
+      const showForm = () => {
+        $('.container').addClass('show-form');
+        $('.thought-input').focus();
+        showingForm = true;
+      }
+
+      const hideForm = () => {
+        $('.container').removeClass('show-form');
+        $('.thought-input').blur();
+        showingForm = false;
+      }
+
+      $('.show-form-button').on('click', (e) => showForm());
+      $('.overlay').on('click', (e) => {
+        if (showingForm) {
+          hideForm();
+        }
+      });
+
+      renderThoughts();
+  </script>
+</body>
+</html>
