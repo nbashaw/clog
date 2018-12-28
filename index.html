@@ -35,6 +35,9 @@
       opacity: 1;
       top: 0;
     }
+    .container.show-form .show-form-button {
+      bottom: -100px;
+    }
     .overlay {
       transition: opacity 0.3s;
       opacity: 0;
@@ -52,7 +55,11 @@
     }
     .thought-list h1 {
       font-size: 20px;
-      border-bottom: 1px solid black;
+      border-bottom: 2px solid black;
+      margin-top: 40px;
+    }
+    .thought-list h1:first-child {
+      margin-top: 20px;
     }
     .form {
       position: fixed;
@@ -86,6 +93,7 @@
       height: 200px;
       width: 100%;
       text-align: left;
+      resize: none;
     }
     .thought-input:focus {
       outline: none;
@@ -101,6 +109,8 @@
     }
     .thought p {
       margin: 0 0 3px 0;
+      font-size: 16px;
+      line-height: 21px;
     }
     .date {
       font-size: 14px;
@@ -124,6 +134,26 @@
       line-height: 0px;
       border: 0;
       -webkit-appearance: none;
+      transition: bottom 0.3s;
+      z-index: 6;
+    }
+    @media (min-width: 500px) {
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .form {
+        width: 400px;
+        left: auto;
+        right: 50px;
+      }
+      .thought-list p {
+        font-size: 18px;
+        line-height: 26px;
+      }
+      .thought-list h1 {
+        font-size: 28px;
+      }
     }
   </style>
 </head>
@@ -164,14 +194,20 @@
         }
       };
 
-      // Handle form submit
-      $(".thought-input").focus();
-      $(".save-thought").on('click', (e) => {
+      // Handle submit
+      const submitThought = () => {
         let text = $('.thought-input').val();
         saveThought(text);
         $('.thought-input').val('');
         renderThoughts();
+        window.scrollTo(0,0);
         hideForm();
+      };
+
+      // Handle form submit
+      $(".thought-input").focus();
+      $(".save-thought").on('click', (e) => {
+        submitThought();
       });
 
       // Render existing thoughts
@@ -192,7 +228,6 @@
         }
       }
 
-      // Show form
       const showForm = () => {
         $('.thought-input').attr('placeholder', `It's ${moment().format('h:mma')}. What's happening?`);
         $('.container').addClass('show-form');
@@ -210,6 +245,17 @@
       $('.overlay').on('click', (e) => {
         if (showingForm) {
           hideForm();
+        }
+      });
+
+      $(window).on('keydown', (e) => {
+        if (e.keyCode === 78 && !showingForm) {
+          e.preventDefault();
+          showForm();
+        } else if (e.keyCode === 27 && showingForm) {
+          hideForm();
+        } else if (e.keyCode === 13 && e.metaKey && showingForm) {
+          submitThought();
         }
       });
 
