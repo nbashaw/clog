@@ -38,7 +38,7 @@
     .overlay {
       transition: opacity 0.3s;
       opacity: 0;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.25);
       z-index: 5;
       position: fixed;
       top: 110vh;
@@ -47,11 +47,11 @@
       bottom: -100px;
     }
     .thought-list {
-      transition: opacity 0.4s;
+      transition: opacity 0.3s;
       padding: 10px;
     }
     .thought-list h1 {
-      font-size: 18px;
+      font-size: 20px;
       border-bottom: 1px solid black;
     }
     .form {
@@ -66,7 +66,7 @@
       padding: 40px 20px 20px 20px;
       text-align: right;
       z-index: 10;
-      transition: bottom 0.2s, opacity 0.2s;
+      transition: bottom 0.3s, opacity 0.3s;
     }
     .form:before {
       content: '';
@@ -131,7 +131,7 @@
   <div class="container">
     <div class="overlay"></div> 
     <div class="form">
-      <textarea class="thought-input" placeholder="What's happening?"></textarea>
+      <textarea class="thought-input"></textarea>
       <button class="save-thought">Save</button>
     </div>
     <div class="thought-list"></div>
@@ -194,6 +194,7 @@
 
       // Show form
       const showForm = () => {
+        $('.thought-input').attr('placeholder', `It's ${moment().format('h:mma')}. What's happening?`);
         $('.container').addClass('show-form');
         $('.thought-input').focus();
         showingForm = true;
