@@ -2,10 +2,22 @@
   "name": "clog",
   "version": "1.0.0",
   "description": "A simple in-the-moment journaling and reflection tool.",
-  "main": "index.js",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nbashaw/clog.git"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "setup-db": "createdb clog_dev"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "ejs": "^2.6.1",
+    "express": "^4.16.4",
+    "knex": "^0.16.3",
+    "less": "^3.9.0",
+    "react": "^16.7.0"
+  }
 }
