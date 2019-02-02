@@ -214,9 +214,13 @@
       const renderThoughts = () => {
         $('.thought-list').html('');
         const existingThoughts = JSON.parse(localStorage.getItem(THOUGHTS));
-        const sortedThoughts = existingThoughts.sort((a, b) => {
-          return new Date(a.created_at) - new Date(b.created_at);
-        }).reverse();
+        
+        const sortedThoughts = existingThoughts ? 
+              existingThoughts.sort((a, b) => {
+                return new Date(a.created_at) - new Date(b.created_at);
+              }).reverse()
+              : [];
+
         let lastDate = null;
         for (let thought of sortedThoughts) {
           const d = new Date(thought.created_at);
